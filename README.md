@@ -12,7 +12,7 @@
      2.  **创建ssh key，用于ssh方式克隆github代码。** 在linux环境下，使用`ssh-keygen -t rsa -b 4096 -C "你的邮箱"`命令，创建ssh key，下面的选项全部直接敲回车即可。 随后使用 `cat ~/.ssh/id_rsa.pub` 命令查看生成的公钥，并完整的复制下来。 在github仓库界面点击自己的头像，选择 settings 。进入到设置页面后，点击左侧的 SSH and GPG keys 选项。点击 New SSH key 选项，并将复制下来的内容粘贴上去，添加该 ssh key 的描述。随后点击 Add SSH key ，并一路点击确认即可。
      3.  **配置本地Linux环境。** 进入Linux的命令行界面，输入`gcc -v`，如果能显示出来版本号，则说明gcc已经安装成功。再输入`make -v`，如果能显示出来版本号，则说明make已经安装成功。
      4.  **clone实验仓库到本地。** 在前面生成的仓库中，同样点击醒目的 code 绿色按钮，选择local下的ssh选项，复制下面的链接。随后回到本地linux环境下，使用git clone 复制的链接的方式，将目标仓库clone到本地(`git clone 你复制的链接`)。随后，使用ls命令查看自己clone下来的文件夹(`ls`)，再使用cd命令进入到该文件夹下(`cd 文件夹名`)。
-     5.  **进行练习吧！** 使用vscode等编辑器（在Linux命令行环境下输入`code .`，如果出现提示，则跟着提示来即可），进入clone下来的目录下的exercises文件夹，（按`Ctrl + J`切换出面板）执行`make test-output`查看完成情况，并依次完成对应的练习。
+     5.  **进行练习吧！** 使用vscode等编辑器（在Linux命令行环境下输入`code .`，如果出现提示，则跟着提示来即可），进入clone下来的目录下的exercises文件夹，（按`Ctrl + J`切换出面板）执行`make test-output`查看完成情况，并依次完成对应的练习。对于单一练习的测试，可以使用`make test-one one=测试名称(不带后缀)`来完成，例如`make test-one one=01_helloWorld`。
      6.  **提交完成情况。** 当做完部分或所有练习之后，在仓库根目录（即有Makefile文件的那个目录，可以通过`ls`来查看当前目录下有什么文件）下执行 `git add .;` `git commit -m "update";` `git push` 命令，把更新提交到Github的CI进行自动评测。你可以在github仓库页面的actions页面，看到你的CI提交结果。
 
    - 在线环境：
