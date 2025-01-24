@@ -1,9 +1,8 @@
 #include<stdio.h>
 int main(){
-	int i = 0;
 	//please finish the 'for' sentences, so that the program could output 01234
-	for(;i<5;i++){
-		//printf("%d",_______);
+	for(int i;i<5;i++){
+		printf("%d",i+1);
 	}
 	return 0;
 }

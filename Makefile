@@ -20,7 +20,8 @@ EXECUTABLES = $(patsubst $(EXERCISE_DIR)/%.c, $(BUILD_DIR)/%, $(EXERCISES))
 
 # Define compiler and linker flags
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
+#CFLAGS = -Wall -Wextra -std=c99 #It'll have more obvious warning that not beautiful. 
+CFLAGS = -std=c99 #I don't wanna the TUI show much messy information
 LDFLAGS = -lm
 
 # Default target: build all executables
@@ -32,13 +33,29 @@ $(BUILD_DIR)/%: $(EXERCISE_DIR)/%.c
 
 # Clean rule to remove all executables and object files
 clean:
-	rm -f $(EXECUTABLES) $(BUILD_DIR)/*.o
+	@rm -f $(EXECUTABLES) $(BUILD_DIR)/*.o
 
 # Generate test cases rule
 generate-test-cases: $(EXECUTABLES)
 	@for exe in $(EXECUTABLES); do \
     	./$$exe > $(TEST_DIR)/$$(basename $$exe).out; \
 	done
+	@$(MAKE) clean
+
+# Test rule to compare the one output with expected result
+test-one: $(EXECUTABLES)
+	@exercise_name=$(one); \
+	exe=$(BUILD_DIR)/$${exercise_name}; \
+	expected=$$(cat $(TEST_DIR)/$${exercise_name}.out); \
+    actual=$$($$exe); \
+    if [ "$$expected" = "$$actual" ]; then \
+       	echo "Test for $${exercise_name} passed.✅"; \
+    else \
+       	echo "Test for $${exercise_name} failed.❗\n"; \
+       	echo "Expected:"; echo "$$expected"; \
+       	echo "Actual:"; echo "$$actual \n"; \
+		break; \
+    fi; 
 	@$(MAKE) clean
 
 # Test rule to compare output with expected results
@@ -48,11 +65,12 @@ test-output: $(EXECUTABLES)
     	expected=$$(cat $(TEST_DIR)/$${exercise_name}.out); \
     	actual=$$($$exe); \
     	if [ "$$expected" = "$$actual" ]; then \
-        	echo "Test for $${exercise_name} passed."; \
+        	echo "Test for $${exercise_name} passed.✅"; \
     	else \
-        	echo "Test for $${exercise_name} failed."; \
+        	echo "Test for $${exercise_name} failed.❗\n"; \
         	echo "Expected:"; echo "$$expected"; \
-        	echo "Actual:"; echo "$$actual"; \
+        	echo "Actual:"; echo "$$actual \n"; \
+			break; \
     	fi; \
 	done
 	@$(MAKE) clean
@@ -71,7 +89,7 @@ save-test-results: $(EXECUTABLES)
         	passed=$$((passed+1)); \
     	fi; \
 	done; \
-	echo "{\"channel\": \"github\",\"courseId\": 1558,\"ext\": \"aaaa\",\"name\": \"testName\",\"score\": $$passed,\"totalScore\": $$total}" > $(BUILD_DIR)/test_results.json
+	echo "{\"channel\": \"github\",\"courseId\": 1001,\"ext\": \"aaaa\",\"name\": \"testName\",\"score\": $$passed,\"totalScore\": $$total}" > $(BUILD_DIR)/test_results.json
 	#@$(MAKE) clean
 
 .PHONY: all clean generate-test-cases test-output save-test-results
