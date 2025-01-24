@@ -1,0 +1,36 @@
+name: Autograding
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  name: "${{ github.actor }}"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check test and generate results
+      run: make save-test-results
+
+    - name: Send POST request with JSON data
+      run: |
+          cat ./build/test_results.json
+          grade_json=$(cat ./build/test_results.json | sed "s/testName/$name/")
+          # use curl send POST 
+          curl -X POST http://117.72.112.62:8080/api/updateGrade \
+            -H "Content-Type: application/json" \
+            -d "$grade_json"
+    
+    - name: clear all
+      run: make clean
