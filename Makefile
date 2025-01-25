@@ -13,7 +13,7 @@ BUILD_DIR = ./build
 $(shell mkdir -p $(TEST_DIR) $(BUILD_DIR))
 
 # Define the list of exercises
-EXERCISES = $(wildcard $(EXERCISE_DIR)/*.c)
+EXERCISES = $(sort $(wildcard $(EXERCISE_DIR)/*.c))
 
 # Define the list of executables
 EXECUTABLES = $(patsubst $(EXERCISE_DIR)/%.c, $(BUILD_DIR)/%, $(EXERCISES))
@@ -43,55 +43,66 @@ generate-test-cases: $(EXECUTABLES)
 	@$(MAKE) clean
 
 # Test rule to compare the one output with expected result
-test-one: $(EXECUTABLES)
-	@exercise_name=$(one); \
-	gcc $(CFLAGS_DETAIL) $(LDFLAGS) $(EXERCISE_DIR)/$(one).c -o $(BUILD_DIR)/$(one); \
-	source=$(EXERCISE_DIR)/$${exercise_name}; \
-	exe=$(BUILD_DIR)/$${exercise_name}; \
-	expected=$$(cat $(TEST_DIR)/$${exercise_name}.out); \
+test-one:
+	@if [ -z "$(one)" ]; then \
+		echo "Error: Target path is empty. Please specify a target."; \
+		exit 1; \
+	fi; \
+	if [ ! -f "$(EXERCISE_DIR)/$(one).c"  ]; then \
+		echo "Error: Source file not found at path: $(EXERCISE_DIR)/$(one).c" \
+		exit 1; \
+	fi; \
+	echo "checking $(one)";\
+    $(CC) $(CFLAGS_DETAIL) $(LDFLAGS) $(EXERCISE_DIR)/$(one).c -o $(BUILD_DIR)/$(one) || exit 1; \
+    exe=$(BUILD_DIR)/${one}; \
+    expected=$$(cat $(TEST_DIR)/${one}.out); \
     actual=$$($$exe); \
     if [ "$$expected" = "$$actual" ]; then \
-       	echo "Test for $${exercise_name} passed.✅🎇🎇🎇🎇"; \
+        echo "Test for $${one} passed.✅🎇🎇🎇🎇"; \
     else \
-       	echo "Test for $${exercise_name} failed.❗\n"; \
-       	echo "Expected:"; echo "$$expected"; \
-       	echo "Actual:"; echo "$$actual \n"; \
-		break; \
-    fi; 
+        echo "Test for $${one} failed.❗\n"; \
+        echo "Expected:"; echo "$$expected"; \
+        echo "Actual:"; echo "$$actual \n"; \
+    fi;
 	@$(MAKE) clean
 
 # Test rule to compare output with expected results
-test-output: $(EXECUTABLES)
-	@for exe in $(EXECUTABLES); do \
-    	exercise_name=$$(basename $$exe); \
-    	expected=$$(cat $(TEST_DIR)/$${exercise_name}.out); \
-    	actual=$$($$exe); \
-    	if [ "$$expected" = "$$actual" ]; then \
-        	echo "Test for $${exercise_name} passed.✅"; \
-    	else \
-        	echo "Test for $${exercise_name} failed.❗\n"; \
+test-output:
+	@for exercise in $(EXERCISES); do \
+		exercise_name=$$(basename $$exercise .c); \
+		$(CC) -o $(BUILD_DIR)/$$exercise_name $$exercise $(CFLAGS) $(LDFLAGS); \
+		exe=$(BUILD_DIR)/$$exercise_name; \
+		expected=$$(cat $(TEST_DIR)/$${exercise_name}.out); \
+		actual=$$($$exe); \
+		if [ "$$expected" = "$$actual" ]; then \
+			echo "Test for $${exercise_name} passed.✅"; \
+		else \
+			echo "Test for $${exercise_name} failed.❗\n"; \
         	echo "Expected:"; echo "$$expected"; \
         	echo "Actual:"; echo "$$actual \n"; \
 			break; \
-    	fi; \
+		fi; \
 	done
 	@$(MAKE) clean
 
 # New target to save test results and count pass rate in JSON format
-save-test-results: $(EXECUTABLES)
-	@total=0; \
+save-test-results: 
+	@total=$(words $(EXERCISES)); \
 	passed=0; \
 	> $(BUILD_DIR)/test_results.json; \
-	for exe in $(EXECUTABLES); do \
-    	exercise_name=$$(basename $$exe); \
-    	expected=$$(cat $(TEST_DIR)/$${exercise_name}.out); \
-    	actual=$$($$exe); \
-    	total=$$((total+1)); \
-    	if [ "$$expected" = "$$actual" ]; then \
-        	passed=$$((passed+1)); \
-    	fi; \
+	for exercise in $(EXERCISES); do \
+		exercise_name=$$(basename $$exercise .c); \
+		$(CC) -o $(BUILD_DIR)/$$exercise_name $$exercise $(CFLAGS) $(LDFLAGS); \
+		exe=$(BUILD_DIR)/$$exercise_name; \
+		expected=$$(cat $(TEST_DIR)/$${exercise_name}.out); \
+		actual=$$($$exe); \
+		if [ "$$expected" = "$$actual" ]; then \
+			passed=$$((passed+1)); \
+		else \
+			break; \
+		fi; \
 	done; \
 	echo "{\"channel\": \"github\",\"courseId\": 1001,\"ext\": \"aaaa\",\"name\": \"testName\",\"score\": $$passed,\"totalScore\": $$total}" > $(BUILD_DIR)/test_results.json
-	#@$(MAKE) clean
+	@$(MAKE) clean
 
 .PHONY: all clean generate-test-cases test-output save-test-results
