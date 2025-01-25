@@ -20,7 +20,7 @@ EXECUTABLES = $(patsubst $(EXERCISE_DIR)/%.c, $(BUILD_DIR)/%, $(EXERCISES))
 
 # Define compiler and linker flags
 CC = gcc
-#CFLAGS = -Wall -Wextra -std=c99 #It'll have more obvious warning that not beautiful. 
+CFLAGS_DETAIL = -Wall -Wextra -std=c99 #It'll have more obvious warning that not beautiful. 
 CFLAGS = -std=c99 #I don't wanna the TUI show much messy information
 LDFLAGS = -lm
 
@@ -45,11 +45,13 @@ generate-test-cases: $(EXECUTABLES)
 # Test rule to compare the one output with expected result
 test-one: $(EXECUTABLES)
 	@exercise_name=$(one); \
+	gcc $(CFLAGS_DETAIL) $(LDFLAGS) $(EXERCISE_DIR)/$(one).c -o $(BUILD_DIR)/$(one); \
+	source=$(EXERCISE_DIR)/$${exercise_name}; \
 	exe=$(BUILD_DIR)/$${exercise_name}; \
 	expected=$$(cat $(TEST_DIR)/$${exercise_name}.out); \
     actual=$$($$exe); \
     if [ "$$expected" = "$$actual" ]; then \
-       	echo "Test for $${exercise_name} passed.✅"; \
+       	echo "Test for $${exercise_name} passed.✅🎇🎇🎇🎇"; \
     else \
        	echo "Test for $${exercise_name} failed.❗\n"; \
        	echo "Expected:"; echo "$$expected"; \
